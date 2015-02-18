@@ -59,7 +59,7 @@ def mapAndSendUniverse(u, m, h, w, img):
     # pdb.set_trace()
     lastPix = m[-1][0]
     cur = 0
-    data = [0]  # dimmer data starts with a value of 0
+    data = []  #  Lumos lib will prepend startcode==0 to this array
     for p in range(lastPix+1):
         pixloc = m[cur][0]
         # fill in any 'missing' pixels
@@ -96,14 +96,20 @@ def mapAndSendUniverse(u, m, h, w, img):
 from maps.map_twopanel import pixmap
 outmap = makeWorkArray(pixmap)
 
-last = False
+sawOSC = False
 def sendPixMap(msg):
+    global sawOSC
+    if not sawOSC:
+        print "OSC incoming!"
+    sawOSC=True
+    
     # Sendscreen will send int:height, int:width, blob:rgba in bytes via OSC
     global last
     last = msg
     h = msg.data[0]
     w = msg.data[1]
     img = msg.data[2]
+   
     # send each universe
     for u in outmap:
         mapAndSendUniverse(u[0], u[1], h, w, img)
