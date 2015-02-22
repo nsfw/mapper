@@ -34,23 +34,33 @@ def makeWorkArray(m):
     # print "u = %d" % ( u )
     return work
 
+# needs 0.2 lumos that supports unicast for unicast mode!
+
 import lumos
-acnList = {}
+acnList = {}    # for multicast
+acn = None      # for unicast
 
 def getAcn(u):
     # For multicast mode, we use on output socket per universe.
     # todo: add unicast flavor
     global acnList
-    acn = acnList.get(u, False)
+
+    # if a single IP is set, then use that
+    if(acn):
+        return acn
+
+    sock = acnList.get(u, False)
     if (not acn):
         # need to make one socket for this universe
-        acn = lumos.DMXSource(u)
-        acnList[u]=acn
-    return acn
+        sock = lumos.DMXSource(u)
+        acnList[u]=sock
+    return sock
 
 def sendUniverse(u, data):
     acn = getAcn(u)
-    acn.send_data(data)
+    # print u,
+    # print len(data)
+    acn.send_data(data, universe=u)
 
 def mapAndSendUniverse(u, m, h, w, img):
     # send the pixels of m to universe u
@@ -93,23 +103,24 @@ def mapAndSendUniverse(u, m, h, w, img):
 #  for each universe - send all lights
 
 # load mapping file
-from maps.map_twopanel import pixmap
+# from maps.map_twopanel import pixmap
+from maps.full import pixmap
 outmap = makeWorkArray(pixmap)
 
 sawOSC = False
 def sendPixMap(msg):
     global sawOSC
     if not sawOSC:
-        print "OSC incoming!"
+        print "hearing OSC"
     sawOSC=True
-    
+
     # Sendscreen will send int:height, int:width, blob:rgba in bytes via OSC
     global last
     last = msg
     h = msg.data[0]
     w = msg.data[1]
     img = msg.data[2]
-   
+
     # send each universe
     for u in outmap:
         mapAndSendUniverse(u[0], u[1], h, w, img)
@@ -117,3 +128,6 @@ def sendPixMap(msg):
 import CCore
 osc = CCore.CCore("osc-udp:") # default multicast address
 osc.subscribe("/screen", sendPixMap)
+
+# execute this if you want unicast, otherwise we default to multicast
+acn = lumos.DMXSource(ip="127.0.0.1")

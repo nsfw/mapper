@@ -1,21 +1,24 @@
 # generate some test maps
 
 # RVIP map - each panel is a universe w/ zig-zag mapping
-# 00 01 ............................................... 18 19 - Row 0
-# 39 38 ............................................... 21 20 - Row 1
-# 40 41 ............................................... 58 59 - Row 2
-# 79 78 ............................................... 61 60 - Row 3
-# 80 81 ............................................... 98 99 - Row 4
+#   19 18 17 16 15 14 13 12 11 10 09 08 07 06 05 04 03 02 01 00 - Row 0
+#   20 21 ............................................... 38 39 - Row 1
+#   59 58 ............................................... 41 40 - Row 2
+#   60 61 ............................................... 78 79 - Row 3
+#   99 98 ............................................... 81 80 - Row 4
+#
+# the 19th pixel is at x,y = 0,0 and the 0th pixel is at x,y = 19,0.
+#
 
 def genPanel(u, leftX, topY ):
-    # assumes first pixel is upper left
+    # assumes first pixel is upper right
     width = 20
     height = 5
-    x = 0
+    x = 19
     y = 0
-    dir = 1
+    dir = -1
     for pix in range(100):
-        print '{ "x":%d , "y":%d, "p":%d, "u":%d },' % (leftX + x, topY + y, pix, u)
+        print '{"p":%d, "x":%d , "y":%d, "u":%d },' % (pix, leftX + x, topY + y,  u)
         x+=dir
         if (x > width-1):
             dir = -1
@@ -25,7 +28,6 @@ def genPanel(u, leftX, topY ):
             dir = 1
             x=0
             y+=1
-
 
 def openMap():
     print ""
