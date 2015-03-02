@@ -21,7 +21,7 @@ def makeWorkArray(m):
     line = []
     for e in sorted(m, key=sortOrder):
         u = e["u"]
-        # if universe and channel have changed, then we have a new "line"
+        # if universe has changed, then we have a new "line"
         if( u != ou):
             if(ou):
                 work.append((ou, line))
@@ -125,8 +125,17 @@ def sendPixMap(msg):
     for u in outmap:
         mapAndSendUniverse(u[0], u[1], h, w, img)
 
+def outputWorkArray(m):
+    print "["
+    for u in m:
+        for p in u[1]:
+            print "[%d, %d, %d, %d]," % (u[0], p[0], p[1], p[2])
+    print "]"
+
 import CCore
 osc = CCore.CCore("osc-udp:") # default multicast address
+# osc = CCore.CCore("osc-udp://192.168.2.110:9999")
+osc = CCore.CCore("osc-udp://127.0.0.1:9999")
 osc.subscribe("/screen", sendPixMap)
 
 # execute this if you want unicast, otherwise we default to multicast
